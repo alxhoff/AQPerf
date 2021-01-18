@@ -1,4 +1,4 @@
-from client import Raid
+from v1.client import Raid
 
 key = "32f59249f7b1ef3e5c67bb064e03bbfc"
 fid = "C1dRfApW8Prm7kGX"

@@ -44,6 +44,10 @@ class Raid:
             self.first_fight = fights[0]
         self.boss_fights = self.client.get_boss_fights()
 
+        for boss in self.boss_fights:
+            print("{} - {} -> {}".format(boss.boss_ascii, boss.start_time, boss.end_time))
+
+
         summary = self.client.get_summary(self.first_fight)
         composition = summary.get("composition")
         self.player_count = len(composition)
@@ -69,6 +73,8 @@ class AQPerfClient:
         self.encounter_id = encounter_id
         self.session = Session()
 
+        self._get()
+
     def _api_get(self, path, **kwargs):
         params = {"api_key": self.api_key}
         params.update(kwargs)
@@ -77,6 +83,15 @@ class AQPerfClient:
 
         data = self.session.get(url, params=params)
         return data.json()
+
+    def _get(self):
+        url = "https://classic.warcraftlogs.com/reports/C1dRfApW8Prm7kGX#boss=-2&difficulty=0&wipes=2&playermetriccompare=rankings"
+
+        data = self.session.get(url)
+
+        data = data.json()
+
+        print("hello")
 
     def get_zones(self):
         return self._api_get("zones")
