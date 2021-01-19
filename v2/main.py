@@ -1,15 +1,16 @@
 from v2.client import Client
-
+from v2.rankings import Rankings
 
 
 def main():
-    global username, passwd
+    global username, passwd, report_ID
 
-    client = Client(username, passwd)
+    client = Client(username, passwd, report_ID)
 
-    rankings = client.get_rankings()
+    duration = client._get_duration()
 
-    print("hello")
+    rankings = Rankings(client)
+
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,7 @@ from io import BytesIO
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
+
 class v2_oauth_transport:
     api_token_url = "https://classic.warcraftlogs.com/oauth/token"
     api_url = "https://classic.warcraftlogs.com/api/v2/client"
@@ -18,12 +19,11 @@ class v2_oauth_transport:
         crl.setopt(pycurl.POST, 1)
         crl.setopt(pycurl.POSTFIELDS, data)
         crl.setopt(pycurl.URL, v2_oauth_transport.api_token_url)
-        crl.setopt(pycurl.VERBOSE, 1)
         crl.setopt(pycurl.USERPWD, "{}:{}".format(client_id, client_secret))
         crl.setopt(pycurl.WRITEDATA, buffer)
 
         crl.perform()
-        self.token = json.loads(buffer.getvalue())['access_token']
+        self.token = json.loads(buffer.getvalue())["access_token"]
 
         auth_header = "Bearer {}".format(self.token)
         header = {"Authorization": auth_header}

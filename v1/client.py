@@ -45,8 +45,9 @@ class Raid:
         self.boss_fights = self.client.get_boss_fights()
 
         for boss in self.boss_fights:
-            print("{} - {} -> {}".format(boss.boss_ascii, boss.start_time, boss.end_time))
-
+            print(
+                "{} - {} -> {}".format(boss.boss_ascii, boss.start_time, boss.end_time)
+            )
 
         summary = self.client.get_summary(self.first_fight)
         composition = summary.get("composition")
