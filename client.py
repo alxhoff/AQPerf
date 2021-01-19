@@ -1,4 +1,4 @@
-from v2.transport import v2_oauth_transport
+from transport import v2_oauth_transport
 
 
 class Client:
