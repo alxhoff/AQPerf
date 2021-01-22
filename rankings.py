@@ -146,8 +146,8 @@ class Player:
         self.buffs = Buffs()
         self.parses = ParseTable()
         self.parse_type = ParseType.UNKNOWN
-        self.visc_weps = False
-        self.visc_oils = False
+        self.visc_weps = True
+        self.visc_oils = True
         self.visc_GNPP = False
         self.visc_absorbed = 0
         self.princess_GNPP = False
@@ -207,10 +207,10 @@ class Roster:
         for player in self.players.values():
 
             # Buffs
-            if player.buffs.get_buff_count() == 0:
+            if player.buffs.buff_count == 0:
                 player.fine_percent = 20
-            elif player.buffs.get_buff_count() == 1:
-                player.fine_percent == 10
+            elif player.buffs.buff_count == 1:
+                player.fine_percent = 10
 
             # Weps
             if not player.visc_weps or not player.visc_oils:
@@ -235,7 +235,7 @@ class Fight:
 
 
 class Rankings:
-    def __init__(self, client):
+    def __init__(self, client, verbose):
 
         self.client = client
         self.rankings = client.get_rankings()
@@ -281,19 +281,12 @@ class Rankings:
         # Fight analytics
         for fight in self.boss_fights:
             if fight.boss_id == 713:  # Visc
-                # 15 - mainhand
-                # 16 - offhand
-                # 17 - wand
-                # temporaryEnchant = 26 - Frost oil
-                # 10761 - coldrage
-                # 19099 - glacial blade
-                # 810 - HOTNW
-                # 14487 - BC hammer
-                # 13984 - Darrowspike
-                frost_mele_weps = [10761, 19099, 810, 14487, 13984]
+                frost_mele_weps = [10761, 19099, 810, 14487, 13984, 5756]
+                frost_wands = [13534, 19108, 9489, 19130, 18483, 10704, 16789]
                 for combatant in fight.data:
                     name = self.roster.get_name_from_id(combatant["sourceID"])
                     player = self.roster.players[name]
+
                     if player.parse_type in [ParseType.HEALS, ParseType.TANK]:
                         player.visc_weps = True
                         player.visc_oils = True
@@ -305,8 +298,6 @@ class Rankings:
                                 not offhand in frost_mele_weps
                             ):
                                 player.visc_weps = False
-                            else:
-                                player.visc_weps = True
 
                             if (not "temporaryEnchant" in combatant["gear"][15]) or (
                                 not "temporaryEnchant" in combatant["gear"][16]
@@ -317,10 +308,13 @@ class Rankings:
                                 oh_oil = combatant["gear"][16]["temporaryEnchant"]
                                 if mh_oil != 26 or oh_oil != 26:
                                     player.visc_oils = False
-                                else:
-                                    player.visc_oils = True
-                        elif player.type in ["Warlock", "Mage", "Priest"]:
-                            pass
+
+                        elif player.type in ["Warlock"]:
+                            wand = combatant["gear"][17]["id"]
+
+                            if not wand in frost_wands:
+                                player.visc_weps = False
+
                         elif player.type in ["Shaman", "Druid"]:
                             mainhand = combatant["gear"][15]["id"]
                             mh_oil = combatant["gear"][15]["temporaryEnchant"]
@@ -376,7 +370,8 @@ class Rankings:
         # Fines
         self.roster.calculate_fines()
 
-        print(self.roster)
+        if verbose:
+            print(self.roster)
 
     def get_boss_fights(self):
         return [
