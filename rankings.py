@@ -213,12 +213,16 @@ class Roster:
                 player.fine_percent = 10
 
             # Weps
-            if not player.visc_weps or not player.visc_oils:
-                player.gold_fine += 100
+            if not player.visc_weps:
+                player.gold_fine += 50
+            if not player.visc_oils:
+                player.gold_fine += 50
 
             # NPPs
-            if not player.visc_GNPP or not player.princess_GNPP:
-                player.gold_fine += 100
+            if not player.visc_GNPP:
+                player.gold_fine += 50
+            if not player.princess_GNPP:
+                player.gold_fine += 50
 
 
 class Fight:
@@ -327,16 +331,17 @@ class Rankings:
                         fight_id=fight.encounter_id, combatant_id=player.id
                     )
 
-                    GNPP_healing = [
-                        skill["total"]
-                        for skill in healing_done
-                        if skill["guid"] in [17546, 7254]
-                    ]
+                    GNPP_healing = sum(
+                        [
+                            skill["total"]
+                            for skill in healing_done
+                            if skill["guid"] in [17546, 7254]
+                        ]
+                    )
 
-                    if len(GNPP_healing):
-                        if GNPP_healing[0] > 1800:
-                            player.visc_absorbed = GNPP_healing[0]
-                            player.visc_GNPP = True
+                    if GNPP_healing > 1800:
+                        player.visc_absorbed = GNPP_healing
+                        player.visc_GNPP = True
 
             if fight.boss_id == 714:  # Huhuran
                 for combatant in fight.data:
@@ -345,19 +350,20 @@ class Rankings:
                     healing_done = self.client.get_healing_done(
                         fight_id=fight.encounter_id, combatant_id=player.id
                     )
-                    GNPP_healing = [
-                        skill["total"]
-                        for skill in healing_done
-                        if skill["guid"] in [17546, 7254]
-                    ]
+                    GNPP_healing = sum(
+                        [
+                            skill["total"]
+                            for skill in healing_done
+                            if skill["guid"] in [17546, 7254]
+                        ]
+                    )
                     if player.parse_type in [ParseType.HEALS, ParseType.TANK]:
                         player.princess_GNPP = True
                     else:
                         if player.type in ["Rogue", "Warrior"]:
-                            if len(GNPP_healing):
-                                if GNPP_healing[0] > 1800:
-                                    player.visc_GNPP = True
-                                    player.princess_absorbed = GNPP_healing[0]
+                            if GNPP_healing > 1800:
+                                player.visc_GNPP = True
+                                player.princess_absorbed = GNPP_healing
                         elif player.type in [
                             "Warlock",
                             "Mage",
