@@ -148,6 +148,12 @@ class Player:
         self.parse_type = ParseType.UNKNOWN
         self.visc_weps = False
         self.visc_oils = False
+        self.visc_GNPP = False
+        self.visc_absorbed = 0
+        self.princess_GNPP = False
+        self.princess_absorbed = 0
+        self.fine_percent = 0
+        self.gold_fine = 0
 
     def add_combatant_info(self, ci):
         if "combatantInfo" in ci:
@@ -158,13 +164,17 @@ class Player:
                         self.buffs.get_buff_count()
 
     def __str__(self):
-        ret = "{} - {} - Buffs: {}, Parses {}, Weps {}, Oils {}".format(
+        ret = "{} - {} - Buffs: {}, Parses {}, Weps {}, Oils {}, Visc GNPP: {}, Huhu GNPP: {}, Fine %: {}, Fine Gold: {}".format(
             self.name,
             self.type,
             str(self.buffs),
             str(self.parses),
             self.visc_weps,
             self.visc_oils,
+            self.visc_GNPP,
+            self.princess_GNPP,
+            self.fine_percent,
+            self.gold_fine,
         )
         return ret
 
@@ -192,6 +202,23 @@ class Roster:
         for key, player in self.players.items():
             ret += "{}\n".format(str(player))
         return ret
+
+    def calculate_fines(self):
+        for player in self.players.values():
+
+            # Buffs
+            if player.buffs.get_buff_count() == 0:
+                player.fine_percent = 20
+            elif player.buffs.get_buff_count() == 1:
+                player.fine_percent == 10
+
+            # Weps
+            if not player.visc_weps or not player.visc_oils:
+                player.gold_fine += 100
+
+            # NPPs
+            if not player.visc_GNPP or not player.princess_GNPP:
+                player.gold_fine += 100
 
 
 class Fight:
@@ -301,6 +328,53 @@ class Rankings:
                                 player.visc_weps = False
                             if mh_oil != 26:
                                 player.visc_oils = False
+
+                    healing_done = self.client.get_healing_done(
+                        fight_id=fight.encounter_id, combatant_id=player.id
+                    )
+
+                    GNPP_healing = [
+                        skill["total"]
+                        for skill in healing_done
+                        if skill["guid"] in [17546, 7254]
+                    ]
+
+                    if len(GNPP_healing):
+                        if GNPP_healing[0] > 1800:
+                            player.visc_absorbed = GNPP_healing[0]
+                            player.visc_GNPP = True
+
+            if fight.boss_id == 714:  # Huhuran
+                for combatant in fight.data:
+                    name = self.roster.get_name_from_id(combatant["sourceID"])
+                    player = self.roster.players[name]
+                    healing_done = self.client.get_healing_done(
+                        fight_id=fight.encounter_id, combatant_id=player.id
+                    )
+                    GNPP_healing = [
+                        skill["total"]
+                        for skill in healing_done
+                        if skill["guid"] == 17546
+                    ]
+                    if player.parse_type in [ParseType.HEALS, ParseType.TANK]:
+                        player.princess_GNPP = True
+                    else:
+                        if player.type in ["Rogue", "Warrior"]:
+                            if len(GNPP_healing):
+                                if GNPP_healing[0] > 1800:
+                                    player.visc_GNPP = True
+                                    player.princess_absorbed = GNPP_healing[0]
+                        elif player.type in [
+                            "Warlock",
+                            "Mage",
+                            "Priest",
+                            "Shaman",
+                            "Druid",
+                            "Hunter",
+                        ]:
+                            player.princess_GNPP = True
+        # Fines
+        self.roster.calculate_fines()
 
         print(self.roster)
 

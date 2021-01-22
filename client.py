@@ -55,6 +55,17 @@ class Client:
         ret = self.transport.query(query)["reportData"]["report"]["events"]["data"]
         return ret
 
+    def get_healing_done(self, combatant_id, fight_id):
+        query = self._get_report_table_query(
+            "fightIDs: [{}], targetID:{}, sourceID:{}".format(
+                fight_id, combatant_id, combatant_id
+            )
+        )
+        ret = self.transport.query(query)["reportData"]["report"]["table"]["data"][
+            "healingDone"
+        ]
+        return ret
+
     def get_ranked_characters(self):
         query = self._get_report_field_query("rankedCharacters")
         ret = self.transport.query(query)

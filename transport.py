@@ -1,6 +1,4 @@
-import requests
 import json
-import pandas as pd
 import pycurl
 from io import BytesIO
 from gql import gql, Client

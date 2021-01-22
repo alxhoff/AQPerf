@@ -2,6 +2,7 @@ from client import Client
 from rankings import Rankings
 
 
+
 def main():
     global username, passwd, report_ID
 
