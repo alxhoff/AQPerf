@@ -348,7 +348,7 @@ class Rankings:
                     GNPP_healing = [
                         skill["total"]
                         for skill in healing_done
-                        if skill["guid"] == 17546
+                        if skill["guid"] in [17546, 7254]
                     ]
                     if player.parse_type in [ParseType.HEALS, ParseType.TANK]:
                         player.princess_GNPP = True
