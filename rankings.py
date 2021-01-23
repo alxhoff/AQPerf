@@ -362,7 +362,7 @@ class Rankings:
                     else:
                         if player.type in ["Rogue", "Warrior"]:
                             if GNPP_healing > 1800:
-                                player.visc_GNPP = True
+                                player.princess_GNPP = True
                                 player.princess_absorbed = GNPP_healing
                         elif player.type in [
                             "Warlock",
