@@ -152,7 +152,7 @@ class Player:
         self.visc_absorbed = 0
         self.princess_GNPP = False
         self.princess_absorbed = 0
-        self.fine_percent = 0
+        self.fine_percent = 1.0
         self.gold_fine = 0
 
     def add_combatant_info(self, ci):
@@ -208,9 +208,9 @@ class Roster:
 
             # Buffs
             if player.buffs.buff_count == 0:
-                player.fine_percent = 20
+                player.fine_percent = 0.8
             elif player.buffs.buff_count == 1:
-                player.fine_percent = 10
+                player.fine_percent = 0.9
 
             # Weps
             if not player.visc_weps:

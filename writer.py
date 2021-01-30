@@ -1,7 +1,7 @@
 import csv
 
 
-def write_rankings(rankings, filename):
+def write_rankings(rankings, split, filename):
 
     with open(filename + ".csv", "w", newline="") as f:
 
@@ -18,8 +18,9 @@ def write_rankings(rankings, filename):
                 "Visc Absorbed",
                 "Huhu NPP",
                 "Huhu Absorbed",
-                "% fine",
+                "fine multiplier",
                 "gold fine",
+                "split",
             ]
         )
 
@@ -38,5 +39,8 @@ def write_rankings(rankings, filename):
                     player.princess_absorbed,
                     player.fine_percent,
                     player.gold_fine,
+                    "=FLOOR({}*{}-{})".format(
+                        split, player.fine_percent, player.gold_fine
+                    ),
                 ]
             )

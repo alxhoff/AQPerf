@@ -38,6 +38,9 @@ def main():
         type=str,
         help="Filename in which the results should be stored",
     )
+    parser.add_argument(
+        "-s", "--split", required=True, type=int, help="100% split value"
+    )
     parser.add_argument("-v", "--verbose", required=False, action="store_true")
     args = parser.parse_args()
 
@@ -47,7 +50,7 @@ def main():
 
     rankings = Rankings(client, args.verbose)
 
-    write_rankings(rankings, filename)
+    write_rankings(rankings, args.split, filename)
 
 
 if __name__ == "__main__":
