@@ -27,7 +27,7 @@ def write_rankings(rankings, split, filename):
                 "Recv",
             ]
         )
-
+        col = 2
         for player in rankings.roster.players.values():
             writer.writerow(
                 [
@@ -50,5 +50,12 @@ def write_rankings(rankings, split, filename):
                         player.fine_percent,
                         player.gold_fine,
                     ),
+                    0,
+                    "=O{}+N{}".format(col, col),
                 ]
             )
+            col += 1
+
+        writer.writerow({})
+        writer.writerow(["Revenue", "Given Out", "Profit"])
+        writer.writerow([0, "=SUM(P2:P43)", "=A46-B46"])
