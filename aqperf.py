@@ -41,14 +41,22 @@ def main():
     parser.add_argument(
         "-s", "--split", required=True, type=int, help="100% split value"
     )
+    parser.add_argument(
+        "-b",
+        "--brackets",
+        action="append",
+        help="Three integers specifying the dps parse " "brackets",
+    )
+    parser.add_argument("-he", "--healers", type=int, help="Healer bracket cutoff")
     parser.add_argument("-v", "--verbose", required=False, action="store_true")
+    parser.add_argument("-vi", "--visc", required=False, action="store_true")
     args = parser.parse_args()
 
     client = Client(auth_id, auth_secret, args.report)
     if args.filename:
         filename = args.filename
 
-    rankings = Rankings(client, args.verbose)
+    rankings = Rankings(client, args.verbose, args.brackets, args.healers, args.visc)
 
     write_rankings(rankings, args.split, filename)
 

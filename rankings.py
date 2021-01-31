@@ -24,6 +24,7 @@ class ParseTable:
     def __init__(self):
 
         self.parses = {}
+        self.total_parse = 0
 
     def add_parse(self, fight_id, boss_id, boss_name, parse):
 
@@ -35,6 +36,8 @@ class ParseTable:
             self.parses[str(boss_id)] = FightParse(fight_id, boss_id, boss_name, parse)
         else:
             self.parses[str(boss_id)].set_parse(parse)
+
+        self.total_parse = self.get_overall_parse()
 
     def get_parse(self, boss_id):
         self.parses.get(str(boss_id), 0)
@@ -146,14 +149,33 @@ class Player:
         self.buffs = Buffs()
         self.parses = ParseTable()
         self.parse_type = ParseType.UNKNOWN
+        self.parse_multiplier = 1.0
         self.visc_weps = True
         self.visc_oils = True
-        self.visc_GNPP = False
+        self.visc_GNPP = True
         self.visc_absorbed = 0
-        self.princess_GNPP = False
+        self.princess_GNPP = True
         self.princess_absorbed = 0
         self.fine_percent = 1.0
         self.gold_fine = 0
+
+    def get_parse_multiplier(self, dps_brackets, healer_cutoff):
+        dps_brackets = dps_brackets[0].split(",")
+        parse = self.parses.get_overall_parse()
+        if self.parse_type == ParseType.DPS:
+            if parse >= int(dps_brackets[2]):
+                self.parse_multiplier = 1.0
+            elif int(dps_brackets[2]) > parse >= int(dps_brackets[1]):
+                self.parse_multiplier = 0.8
+            elif int(dps_brackets[1]) > parse >= int(dps_brackets[0]):
+                self.parse_multiplier = 0.5
+            else:
+                self.parse_multiplier = 0.0
+        elif self.parse_type == ParseType.HEALS:
+            if parse > int(healer_cutoff):
+                self.parse_multiplier = 1.0
+
+        return self.parse_multiplier
 
     def add_combatant_info(self, ci):
         if "combatantInfo" in ci:
@@ -184,8 +206,10 @@ class Roster:
     Describes a raid roster for a given period, eg. fight, raid, first pull etc.
     """
 
-    def __init__(self, composition):
+    def __init__(self, composition, dps_brackets, healer_cutoff):
 
+        self.dps_brackets = dps_brackets
+        self.healer_cutoff = healer_cutoff
         self.players = {}
         for player in composition:
             if "name" in player:
@@ -224,6 +248,8 @@ class Roster:
             if not player.princess_GNPP:
                 player.gold_fine += 50
 
+            player.get_parse_multiplier(self.dps_brackets, self.healer_cutoff)
+
 
 class Fight:
     """
@@ -239,15 +265,18 @@ class Fight:
 
 
 class Rankings:
-    def __init__(self, client, verbose):
+    def __init__(self, client, verbose, dps_brackets, healer_cutoff, visc=False):
 
         self.client = client
         self.rankings = client.get_rankings()
         self.boss_fights = self.get_boss_fights()
+        self.visc = visc
 
         # Fight zero represents all trash fights and is such used for checking WBs as the first pull is trash, this is
         # the moment where WBs are snapshotted
-        self.roster = Roster(self.client.get_raid_composition(0))
+        self.roster = Roster(
+            self.client.get_raid_composition(0), dps_brackets, healer_cutoff
+        )
 
         # add parse types
         for player in self.roster.players.values():
@@ -284,7 +313,7 @@ class Rankings:
 
         # Fight analytics
         for fight in self.boss_fights:
-            if fight.boss_id == 713:  # Visc
+            if fight.boss_id == 713 and self.visc:  # Visc
                 frost_mele_weps = [10761, 19099, 810, 14487, 13984, 5756]
                 frost_wands = [13534, 19108, 9489, 19130, 18483, 10704, 16789]
                 for combatant in fight.data:
